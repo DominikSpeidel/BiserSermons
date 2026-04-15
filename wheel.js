@@ -118,6 +118,7 @@
 
   function showTooltip(e, sunday) {
     if (!tooltip) return;
+    if (window.innerWidth <= 680) return;
     const dateStr = formatDate(sunday.date);
     tooltip.querySelector('.tt-label').textContent = sunday.label;
     tooltip.querySelector('.tt-date').textContent = dateStr;
