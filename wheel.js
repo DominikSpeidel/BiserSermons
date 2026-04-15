@@ -280,9 +280,6 @@
       activeSlice = path;
       showInfoPanel(days[idx]);
       if (infoPanel) infoPanel.classList.toggle('is-upcoming', idx === upcomingIdx);
-      if (infoPanel && window.innerWidth <= 1020) {
-        setTimeout(() => infoPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
-      }
     }
 
     slicesGroup.addEventListener('click', (e) => {
