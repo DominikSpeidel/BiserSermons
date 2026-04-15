@@ -681,6 +681,7 @@ footer p {
     flex: none;
   }
   #info-panel { order: -1; }
+  #tooltip { display: none !important; }
   .wheel-svg {
     width: min(500px, 84vw, calc(100dvh - 360px));
     height: min(500px, 84vw, calc(100dvh - 360px));
