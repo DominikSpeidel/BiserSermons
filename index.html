@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kirchenjahresrad — Predigten</title>
+    <meta
+      name="description"
+      content="Das katholische Kirchenjahr als interaktives Rad — Predigten von Eugen Biser und mehr."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css?v=100" />
+  </head>
+  <body>
+    <span class="accent-strip" aria-hidden="true"></span>
+
+    <main>
+      <header>
+        <span class="section-label">Kirchenjahr</span>
+        <h1>Eugen Biser Predigten im Jahreskreis</h1>
+        <p class="subtitle">
+          Klicken Sie auf einen Sonn- oder Festtag, um die Predigt aufzurufen.
+        </p>
+        <div id="year-selector" aria-label="Lesejahr auswählen">
+          <span class="year-selector-label">Lesejahr</span>
+          <button class="year-btn active" data-year="A">A</button>
+          <button class="year-btn" data-year="B">B</button>
+          <button class="year-btn" data-year="C">C</button>
+          <span id="year-label">2025/2026</span>
+        </div>
+      </header>
+
+      <div class="main-layout">
+        <aside class="left-col" aria-label="Über Eugen Biser">
+          <div class="bio-box">
+            <span class="section-label">Über den Theologen</span>
+            <h2>Eugen Biser</h2>
+            <p class="bio-lifespan">1918 – 2014</p>
+            <p>
+              Professor Dr. Eugen Biser war ein deutscher katholischer Theologe
+              und Religionsphilosoph. 1974 übernahm er an der
+              Ludwig-Maximilians-Universität München den Lehrstuhl für
+              Christliche Weltanschauung und Religionsphilosophie, den zuvor
+              Romano Guardini innehatte.
+            </p>
+            <p>
+              Mit seinen Werken zur Dialogtheologie und einem modernen
+              Christusverständnis prägte er die katholische Theologie des 20.
+              Jahrhunderts. Seine Predigten verbinden tiefe Spiritualität mit
+              intellektueller Klarheit.
+            </p>
+          </div>
+        </aside>
+
+        <div id="wheel-container"></div>
+
+        <aside class="sidebar" aria-label="Legende und Informationen">
+          <div class="legend-box">
+            <span class="section-label">Liturgische Farben</span>
+            <div id="legend"></div>
+          </div>
+
+          <div id="info-panel" aria-live="polite">
+            <span class="ip-upcoming-badge" aria-hidden="true"
+              >Nächste Predigt</span
+            >
+            <div class="ip-empty">
+              <svg
+                class="ip-empty-icon"
+                viewBox="0 0 48 48"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="24"
+                  cy="24"
+                  r="20"
+                  stroke="currentColor"
+                  stroke-width="1.2"
+                  opacity="0.5"
+                />
+                <circle
+                  cx="24"
+                  cy="24"
+                  r="12"
+                  stroke="currentColor"
+                  stroke-width="1.2"
+                  opacity="0.35"
+                />
+                <circle
+                  cx="24"
+                  cy="24"
+                  r="4"
+                  fill="currentColor"
+                  opacity="0.25"
+                />
+                <line
+                  x1="24"
+                  y1="4"
+                  x2="24"
+                  y2="12"
+                  stroke="currentColor"
+                  stroke-width="1"
+                  opacity="0.3"
+                />
+                <line
+                  x1="24"
+                  y1="36"
+                  x2="24"
+                  y2="44"
+                  stroke="currentColor"
+                  stroke-width="1"
+                  opacity="0.3"
+                />
+                <line
+                  x1="4"
+                  y1="24"
+                  x2="12"
+                  y2="24"
+                  stroke="currentColor"
+                  stroke-width="1"
+                  opacity="0.3"
+                />
+                <line
+                  x1="36"
+                  y1="24"
+                  x2="44"
+                  y2="24"
+                  stroke="currentColor"
+                  stroke-width="1"
+                  opacity="0.3"
+                />
+              </svg>
+              <span class="ip-empty-title">Sonntag / Festtag auswählen</span>
+              <span class="ip-empty-hint"
+                >Klicken Sie auf ein Segment im Rad</span
+              >
+            </div>
+            <div class="ip-content">
+              <span class="section-label">Der gewählte Sonntag / Festtag</span>
+              <div class="ip-header">
+                <span class="ip-color-dot"></span>
+                <div>
+                  <span class="ip-label">—</span>
+                </div>
+              </div>
+              <span class="ip-date"></span>
+              <span class="ip-season"></span>
+              <span class="ip-lesung" style="visibility: hidden">&nbsp;</span>
+              <span class="ip-predigt-date" style="visibility: hidden"
+                >&nbsp;</span
+              >
+              <button id="info-predigt" type="button" class="no-url">
+                Zur Predigt
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <footer>
+      <p id="footer-text">
+        Kirchenjahr 2025/2026 (Lesejahr A) — Alle Sonn- und ausgewählte Festtage
+        vom 1.&nbsp;Advent bis Christkönig
+      </p>
+    </footer>
+
+    <div id="tooltip" role="tooltip" aria-hidden="true">
+      <span class="tt-label"></span>
+      <span class="tt-date"></span>
+      <span class="tt-link">Predigt öffnen →</span>
+    </div>
+
+    <script src="data.js?v=100"></script>
+    <script src="wheel.js?v=100"></script>
+  </body>
+</html>
