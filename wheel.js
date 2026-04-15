@@ -424,8 +424,8 @@
     const TOP_LABEL_R = 92;
     const BOT_LABEL_R = 104;
 
-    const itS = polarToXY(CX, CY, TOP_LABEL_R, -170);
-    const itE = polarToXY(CX, CY, TOP_LABEL_R, -10);
+    const itS = polarToXY(CX, CY, TOP_LABEL_R, -178);
+    const itE = polarToXY(CX, CY, TOP_LABEL_R, -2);
     defs.appendChild(svgEl('path', {
       id: 'inner-top-arc',
       d: `M ${itS.x} ${itS.y} A ${TOP_LABEL_R} ${TOP_LABEL_R} 0 0 1 ${itE.x} ${itE.y}`,
