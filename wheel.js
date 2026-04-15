@@ -121,14 +121,6 @@
     const dateStr = formatDate(sunday.date);
     tooltip.querySelector('.tt-label').textContent = sunday.label;
     tooltip.querySelector('.tt-date').textContent = dateStr;
-    const linkEl = tooltip.querySelector('.tt-link');
-    if (sunday.url) {
-      linkEl.textContent = 'Predigt öffnen ▶';
-      linkEl.style.display = 'inline-block';
-    } else {
-      linkEl.textContent = '';
-      linkEl.style.display = 'none';
-    }
     tooltip.classList.add('visible');
     positionTooltip(e);
   }
@@ -149,6 +141,8 @@
   function hideTooltip() {
     if (tooltip) tooltip.classList.remove('visible');
   }
+
+  window.addEventListener('scroll', hideTooltip, { passive: true });
 
   // ── Info-Panel ───────────────────────────────────────────────────────────
   let infoPanel = null;
@@ -286,6 +280,9 @@
       activeSlice = path;
       showInfoPanel(days[idx]);
       if (infoPanel) infoPanel.classList.toggle('is-upcoming', idx === upcomingIdx);
+      if (infoPanel && window.innerWidth <= 1020) {
+        setTimeout(() => infoPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+      }
     }
 
     slicesGroup.addEventListener('click', (e) => {
