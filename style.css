@@ -1124,6 +1124,7 @@ body[data-view="wheel"] .swipe-list { display: none; }
 @media (max-width: 680px) {
   main { padding: 0 1rem; }
   .swipe-list { --sl-visible: 3; }
+  header .subtitle { display: none; }
   body[data-view="list"] .main-layout { padding-top: 1.1rem; }
   body[data-view="list"] #wheel-container { padding: 0.6rem 0; }
   .sidebar {
