@@ -19,6 +19,24 @@
 
   let activeYear = 'A';
   let activeSlice = null;
+  let activeCard = null;
+  let currentDays = [];
+  let currentUpcomingIdx = -1;
+
+  // ── Media Queries / Modus-Erkennung ──────────────────────────────────────
+  // Phone (≤680): immer Liste (Rad wäre zu klein).
+  // Tablet & Desktop (>680): User wählt via Toggle; Wahl gilt nur für die
+  // aktuelle Seiten-Session, jeder Reload startet wieder im Rad.
+  const MQ = {
+    phone: window.matchMedia('(max-width: 680px)'),
+  };
+
+  let selectedView = 'wheel';
+
+  function currentMode() {
+    if (MQ.phone.matches) return 'list';
+    return selectedView;
+  }
 
   // Heute als ISO-String "YYYY-MM-DD" (lokale Zeitzone)
   function todayISO() {
@@ -150,31 +168,25 @@
   function showInfoPanel(sunday) {
     if (!infoPanel) return;
     const seasonMeta = SEASON_COLORS[sunday.season];
-    infoPanel.querySelector('.ip-label').textContent = sunday.label;
-    infoPanel.querySelector('.ip-date').textContent  = formatDate(sunday.date);
+    infoPanel.querySelector('.ip-label').textContent  = sunday.label;
+    infoPanel.querySelector('.ip-date').textContent   = formatDate(sunday.date);
     infoPanel.querySelector('.ip-season').textContent = seasonMeta ? seasonMeta.label : '';
 
     const lesungEl = infoPanel.querySelector('.ip-lesung');
-    if (lesungEl) {
-      lesungEl.textContent = sunday.lesung ? `Lesung: ${sunday.lesung}` : '\u00A0';
-      lesungEl.style.visibility = sunday.lesung ? 'visible' : 'hidden';
-    }
+    lesungEl.textContent = sunday.lesung ? `Lesung: ${sunday.lesung}` : '\u00A0';
+    lesungEl.style.visibility = sunday.lesung ? 'visible' : 'hidden';
 
     const predigtDateEl = infoPanel.querySelector('.ip-predigt-date');
-    if (predigtDateEl) {
-      predigtDateEl.textContent = sunday.predigtDate ? `Predigt gehalten am ${formatDate(sunday.predigtDate)}` : '\u00A0';
-      predigtDateEl.style.visibility = sunday.predigtDate ? 'visible' : 'hidden';
-    }
+    predigtDateEl.textContent = sunday.predigtDate ? `Predigt gehalten am ${formatDate(sunday.predigtDate)}` : '\u00A0';
+    predigtDateEl.style.visibility = sunday.predigtDate ? 'visible' : 'hidden';
 
     const predigtBtn = infoPanel.querySelector('#info-predigt');
-    if (predigtBtn) {
-      predigtBtn.dataset.url = sunday.url || '';
-      predigtBtn.classList.toggle('no-url', !sunday.url);
-      predigtBtn.textContent = sunday.url ? 'Zur Predigt' : 'Keine Predigtaufnahme verfügbar';
-    }
+    predigtBtn.dataset.url = sunday.url || '';
+    predigtBtn.classList.toggle('no-url', !sunday.url);
+    predigtBtn.textContent = sunday.url ? 'Zur Predigt' : 'Keine Predigtaufnahme verfügbar';
 
-    const dot = infoPanel.querySelector('.ip-color-dot');
-    if (dot && seasonMeta) {
+    if (seasonMeta) {
+      const dot = infoPanel.querySelector('.ip-color-dot');
       dot.style.background = seasonMeta.fill;
       dot.style.border = `2px solid ${seasonMeta.stroke}`;
     }
@@ -186,16 +198,61 @@
     if (infoPanel) infoPanel.classList.remove('visible', 'is-upcoming');
   }
 
+  // ── Gemeinsame Selektions-Logik (Wheel + List) ───────────────────────────
+  function clearWheelActive() {
+    if (activeSlice) {
+      activeSlice.setAttribute('fill', activeSlice.dataset.origFill);
+      activeSlice.classList.remove('active');
+      activeSlice = null;
+    }
+  }
+
+  function clearListActive() {
+    if (activeCard) {
+      activeCard.classList.remove('active');
+      activeCard.setAttribute('aria-selected', 'false');
+      activeCard = null;
+    }
+  }
+
+  function paintSlice(idx) {
+    const path = document.querySelector(`#wheel-container .slice[data-idx="${idx}"]`);
+    if (!path) return;
+    path.setAttribute('fill', lightenHex(path.dataset.origFill, 0.35));
+    path.classList.add('active');
+    activeSlice = path;
+  }
+
+  function paintCard(idx) {
+    const card = document.querySelector(`#wheel-container .sl-card[data-idx="${idx}"]`);
+    if (!card) return;
+    card.classList.add('active');
+    card.setAttribute('aria-selected', 'true');
+    activeCard = card;
+  }
+
+  function selectIdx(idx) {
+    if (idx < 0 || idx >= currentDays.length) return;
+    clearWheelActive();
+    clearListActive();
+    // Beide Views bemalen, damit die Auswahl beim Toggle bestehen bleibt
+    // (querySelector liefert null, wenn der jeweilige View nicht gerendert ist — dann no-op)
+    paintSlice(idx);
+    paintCard(idx);
+    showInfoPanel(currentDays[idx]);
+    if (infoPanel) infoPanel.classList.toggle('is-upcoming', idx === currentUpcomingIdx);
+  }
+
   // ── Rad zeichnen ─────────────────────────────────────────────────────────
   function buildWheel(days) {
     const svgContainer = document.getElementById('wheel-container');
     if (!svgContainer) return;
 
-    // Clearing: altes Rad + Legende entfernen, Info-Panel zurücksetzen
-    svgContainer.innerHTML = '';
+    // Nur das alte Rad entfernen — evtl. vorhandene .swipe-list bleibt,
+    // damit beide Views auf Desktop koexistieren können.
+    const oldSvg = svgContainer.querySelector('.wheel-svg');
+    if (oldSvg) oldSvg.remove();
     activeSlice = null;
-    const legendEl = document.getElementById('legend');
-    if (legendEl) legendEl.innerHTML = '';
     if (infoPanel) infoPanel.classList.remove('visible', 'is-upcoming');
 
     tooltip   = document.getElementById('tooltip');
@@ -243,16 +300,10 @@
     });
 
     // Event-Delegation auf Slice-Gruppe
-    function getSliceData(target) {
-      if (!target.classList.contains('slice')) return null;
-      return days[+target.dataset.idx];
-    }
-
     slicesGroup.addEventListener('mouseenter', (e) => {
-      const sunday = getSliceData(e.target);
-      if (!sunday) return;
+      if (!e.target.classList.contains('slice')) return;
       e.target.classList.add('hovered');
-      showTooltip(e, sunday);
+      showTooltip(e, days[+e.target.dataset.idx]);
     }, true);
 
     slicesGroup.addEventListener('mousemove', (e) => {
@@ -265,26 +316,9 @@
       hideTooltip();
     }, true);
 
-    const upcomingIdx = activeYear === getCurrentYearKey() ? findUpcomingSundayIdx(days) : -1;
-
-    function selectSliceByIdx(idx) {
-      if (idx < 0 || idx >= days.length) return;
-      const path = slicesGroup.querySelector(`.slice[data-idx="${idx}"]`);
-      if (!path) return;
-      if (activeSlice) {
-        activeSlice.setAttribute('fill', activeSlice.dataset.origFill);
-        activeSlice.classList.remove('active');
-      }
-      path.setAttribute('fill', lightenHex(path.dataset.origFill, 0.35));
-      path.classList.add('active');
-      activeSlice = path;
-      showInfoPanel(days[idx]);
-      if (infoPanel) infoPanel.classList.toggle('is-upcoming', idx === upcomingIdx);
-    }
-
     slicesGroup.addEventListener('click', (e) => {
       if (!e.target.classList.contains('slice')) return;
-      selectSliceByIdx(+e.target.dataset.idx);
+      selectIdx(+e.target.dataset.idx);
     });
 
     slicesGroup.addEventListener('keydown', (e) => {
@@ -328,7 +362,6 @@
       const textEl = svgEl('text', {
         'font-size': '13',
         'font-weight': '600',
-        'font-family': "'Inter', system-ui, sans-serif",
         fill: '#8a8a9a',
         'letter-spacing': '4',
       });
@@ -367,7 +400,6 @@
         y: pos.y,
         'font-size': '11',
         'font-weight': '700',
-        'font-family': "'Inter', system-ui, sans-serif",
         fill: '#3a2a1a',
         'text-anchor': 'middle',
         'dominant-baseline': 'central',
@@ -437,7 +469,6 @@
     const topText = svgEl('text', {
       'font-size': '14',
       'font-weight': '600',
-      'font-family': "'Inter', system-ui, sans-serif",
       fill: '#9a8a78',
       'letter-spacing': '2',
     });
@@ -449,7 +480,6 @@
     const botText = svgEl('text', {
       'font-size': '16',
       'font-weight': '700',
-      'font-family': "'Inter', system-ui, sans-serif",
       fill: '#3a2a1a',
       'letter-spacing': '0.8',
     });
@@ -467,14 +497,15 @@
     buildLegend();
 
     // ── Auto-Auswahl: kommender Sonntag im aktuell gültigen Lesejahr ─────
-    if (upcomingIdx !== -1) {
-      selectSliceByIdx(upcomingIdx);
+    if (currentUpcomingIdx !== -1) {
+      selectIdx(currentUpcomingIdx);
     }
   }
 
   function buildLegend() {
     const legendEl = document.getElementById('legend');
     if (!legendEl) return;
+    legendEl.innerHTML = '';
 
     const seasons = ['christmas', 'easter', 'ordinary', 'festtag'];
 
@@ -499,6 +530,174 @@
     });
   }
 
+  // ── Swipe-Liste zeichnen ─────────────────────────────────────────────────
+  function buildList(days) {
+    const container = document.getElementById('wheel-container');
+    if (!container) return;
+
+    // Nur die alte Liste entfernen — evtl. vorhandene .wheel-svg bleibt,
+    // damit beide Views auf Desktop koexistieren können.
+    const oldList = container.querySelector('.swipe-list');
+    if (oldList) oldList.remove();
+    activeCard = null;
+    infoPanel = document.getElementById('info-panel');
+    if (infoPanel) infoPanel.classList.remove('visible', 'is-upcoming');
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'swipe-list';
+    wrapper.setAttribute('role', 'listbox');
+    wrapper.setAttribute('aria-label', 'Sonntage des Kirchenjahres');
+
+    const track = document.createElement('ul');
+    track.className = 'swipe-list-track';
+
+    days.forEach((day, idx) => {
+      const li = document.createElement('li');
+      li.className = `sl-card sl-${day.season}` + (day.url ? '' : ' no-sermon');
+      li.dataset.idx = String(idx);
+      li.setAttribute('role', 'option');
+      li.setAttribute('tabindex', '0');
+      li.setAttribute('aria-selected', 'false');
+
+      const seasonMeta = SEASON_COLORS[day.season];
+      const metaParts = [];
+      if (seasonMeta) metaParts.push(seasonMeta.label);
+      metaParts.push(day.url ? 'Predigt verfügbar' : 'Keine Predigt');
+
+      li.innerHTML = `
+        <span class="sl-accent" aria-hidden="true"></span>
+        <div class="sl-body">
+          <span class="sl-date">${formatDate(day.date)}</span>
+          <span class="sl-label">${day.label}</span>
+          <span class="sl-meta">${metaParts.join(' · ')}</span>
+        </div>
+        <span class="sl-sermon-dot" aria-hidden="true"></span>
+      `;
+
+      track.appendChild(li);
+    });
+
+    wrapper.appendChild(track);
+    container.appendChild(wrapper);
+
+    // Event-Delegation: Klick + Keyboard
+    track.addEventListener('click', (e) => {
+      const card = e.target.closest('.sl-card');
+      if (!card) return;
+      selectIdx(+card.dataset.idx);
+    });
+
+    track.addEventListener('keydown', (e) => {
+      const card = e.target.closest('.sl-card');
+      if (!card) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        selectIdx(+card.dataset.idx);
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const dir = e.key === 'ArrowDown' ? 1 : -1;
+        const next = track.querySelector(`.sl-card[data-idx="${+card.dataset.idx + dir}"]`);
+        if (next) next.focus();
+      }
+    });
+
+    buildLegend();
+
+    // Auto-Auswahl + Zentrierung
+    if (currentUpcomingIdx !== -1) {
+      selectIdx(currentUpcomingIdx);
+      const card = track.querySelector(`.sl-card[data-idx="${currentUpcomingIdx}"]`);
+      if (card) {
+        // instant scroll, nach nächstem Frame damit Layout steht
+        requestAnimationFrame(() => {
+          const top = card.offsetTop - wrapper.clientHeight / 2 + card.clientHeight / 2;
+          wrapper.scrollTop = Math.max(0, top);
+        });
+      }
+    } else {
+      wrapper.scrollTop = 0;
+    }
+  }
+
+  // ── Modus anwenden (Wheel oder Liste) ────────────────────────────────────
+  // Auf Desktop (>=1181px) koexistieren beide Views im Slot und werden nur
+  // bei Daten-/Jahreswechsel gebaut — der Toggle steuert nur CSS/ARIA, damit
+  // das Layout nicht springt und der Listen-Scroll-Zustand erhalten bleibt.
+  // Auf Tablet/Mobile wird weiterhin bei jedem Toggle der aktive View gebaut.
+  let builtForKey = null;
+
+  function applyMode(days) {
+    const data = days || currentDays;
+    if (!data || !data.length) return;
+    currentDays = data;
+    currentUpcomingIdx = activeYear === getCurrentYearKey() ? findUpcomingSundayIdx(data) : -1;
+
+    // Badge-Text: "Heutige Predigt" wenn der kommende Termin heute ist,
+    // sonst "Nächste Predigt".
+    const badgeEl = document.querySelector('.ip-upcoming-badge');
+    if (badgeEl) {
+      const isToday = currentUpcomingIdx !== -1 && data[currentUpcomingIdx].date === todayISO();
+      badgeEl.textContent = isToday ? 'Heutige Predigt' : 'Nächste Predigt';
+    }
+
+    const mode = currentMode();
+    document.body.dataset.view = mode;
+
+    // Toggle-Button-State synchron halten
+    document.querySelectorAll('.vt-btn').forEach(btn => {
+      const isActive = btn.dataset.view === mode;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-checked', isActive ? 'true' : 'false');
+    });
+
+    const isDesktop = window.innerWidth >= 1181;
+    const buildKey  = `${activeYear}|${isDesktop ? 'D' : 'S'}`;
+
+    // Auf Tablet/Mobile darf immer nur ein View im DOM sein — vorhandene
+    // Überbleibsel aus einem anderen Breakpoint aufräumen.
+    if (!isDesktop) {
+      const container = document.getElementById('wheel-container');
+      if (container) {
+        const strayWheel = mode !== 'wheel' ? container.querySelector('.wheel-svg') : null;
+        const strayList  = mode !== 'list'  ? container.querySelector('.swipe-list') : null;
+        if (strayWheel) strayWheel.remove();
+        if (strayList)  strayList.remove();
+      }
+    }
+
+    if (builtForKey !== buildKey) {
+      if (isDesktop) {
+        // Beide Views bauen → koexistieren im Slot, Toggle ist reiner CSS-Fade
+        buildWheel(data);
+        buildList(data);
+      } else {
+        // Tablet/Mobile: nur aktiven View bauen (wie zuvor)
+        if (mode === 'list') buildList(data);
+        else                 buildWheel(data);
+      }
+      builtForKey = buildKey;
+    } else if (!isDesktop) {
+      // Tablet/Mobile Toggle: aktiven View neu bauen (keine Koexistenz)
+      if (mode === 'list') buildList(data);
+      else                 buildWheel(data);
+    }
+
+    // Desktop: ARIA + inert auf dem inaktiven Sub-Container,
+    // damit Screenreader und Tab-Fokus den unsichtbaren View überspringen.
+    if (isDesktop) {
+      const wheelEl = document.querySelector('#wheel-container .wheel-svg');
+      const listEl  = document.querySelector('#wheel-container .swipe-list');
+      const setInactive = (el, inactive) => {
+        if (!el) return;
+        el.setAttribute('aria-hidden', inactive ? 'true' : 'false');
+        if (inactive) el.setAttribute('inert', '');
+        else          el.removeAttribute('inert');
+      };
+      setInactive(wheelEl, mode !== 'wheel');
+      setInactive(listEl,  mode !== 'list');
+    }
+  }
+
   // ── Lesejahr wechseln ────────────────────────────────────────────────────
   function switchYear(yearKey) {
     const yearData = KIRCHENJAHR[yearKey];
@@ -520,17 +719,24 @@
       btn.classList.toggle('active', btn.dataset.year === yearKey);
     });
 
-    // Rad neu zeichnen
-    buildWheel(yearData.days);
+    // Rad oder Liste neu zeichnen (je nach Modus)
+    applyMode(yearData.days);
   }
 
   // ── Höhen-Sync: Sidebar-Unterkante = Bio-Box-Unterkante ──────────────────
+  // Nur auf Desktop (>1180px) sinnvoll — bei schmaleren Layouts wird die
+  // min-height zurückgesetzt, weil Sidebar und Bio dort gestapelt sind.
   function syncPanelHeight() {
+    const infoPanel = document.getElementById('info-panel');
+    if (!infoPanel) return;
+    if (window.innerWidth <= 1180) {
+      infoPanel.style.minHeight = '';
+      return;
+    }
     const bioBox    = document.querySelector('.bio-box');
     const legendBox = document.querySelector('.legend-box');
-    const infoPanel = document.getElementById('info-panel');
     const sidebar   = document.querySelector('.sidebar');
-    if (!bioBox || !legendBox || !infoPanel || !sidebar) return;
+    if (!bioBox || !legendBox || !sidebar) return;
     const gap = parseFloat(getComputedStyle(sidebar).gap) || 0;
     const available = bioBox.offsetHeight - legendBox.offsetHeight - gap;
     infoPanel.style.minHeight = Math.max(available, 160) + 'px';
@@ -542,6 +748,19 @@
     if (bioBox && window.ResizeObserver) {
       new ResizeObserver(syncPanelHeight).observe(bioBox);
     }
+    window.addEventListener('resize', syncPanelHeight, { passive: true });
+
+    // Breakpoint-Crossing: beim Wechsel zwischen Desktop und Tablet die Views
+    // neu aufbauen (Desktop = beide koexistieren, Tablet = nur aktiver View).
+    let wasDesktop = window.innerWidth >= 1181;
+    window.addEventListener('resize', () => {
+      const isDesktop = window.innerWidth >= 1181;
+      if (isDesktop !== wasDesktop) {
+        wasDesktop = isDesktop;
+        builtForKey = null;
+        applyMode();
+      }
+    }, { passive: true });
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────
@@ -565,12 +784,29 @@
       });
     });
 
+    // View-Toggle verkabeln (nur Tablet-MQ sichtbar)
+    document.querySelectorAll('.vt-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.classList.contains('active')) return;
+        const view = btn.dataset.view;
+        if (view === 'wheel' || view === 'list') {
+          selectedView = view;
+          applyMode();
+        }
+      });
+    });
+
+    // Phone-MQ-Listener: beim Crossen der 680px-Schwelle Ansicht neu aufbauen
+    const onMQChange = () => applyMode();
+    if (MQ.phone.addEventListener)  MQ.phone.addEventListener('change', onMQChange);
+    else if (MQ.phone.addListener)  MQ.phone.addListener(onMQChange);
+
     // Initiales Lesejahr dynamisch bestimmen (das, in dessen Zeitraum heute liegt)
     const initialYearKey = getCurrentYearKey();
     if (KIRCHENJAHR[initialYearKey]) {
       switchYear(initialYearKey);
     } else if (KIRCHENJAHR[activeYear]) {
-      buildWheel(KIRCHENJAHR[activeYear].days);
+      applyMode(KIRCHENJAHR[activeYear].days);
     }
 
     initHeightSync();

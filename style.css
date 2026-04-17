@@ -1,7 +1,37 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    Kirchenjahresrad — style.css
-   Design: Variante 4 — Stiftungs-Look (Rot/Weiß, Lato, Corporate-Clean)
+   Design: Variante 4 — Stiftungs-Look (Rot/Weiß, Open Sans, Corporate-Clean)
    ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Schrift: Open Sans lokal gehostet (SIL OFL, siehe fonts/OFL.txt) ──── */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('fonts/open-sans-300.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/open-sans-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/open-sans-400-italic.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('fonts/open-sans-700.woff2') format('woff2');
+}
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -18,7 +48,7 @@
   --rule:        #e8e8e8;
   --rule-strong: #d0d0d0;
 
-  --font-ui: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-ui: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --transition: 220ms var(--ease);
@@ -79,7 +109,9 @@ main {
 header {
   width: 100%;
   max-width: 1280px;
-  padding: 1.4rem 1rem 1rem;
+  /* Vertikale Paddings skalieren mit Viewport-Höhe — auf kurzen Laptops (900px)
+     bleibt mehr Platz fürs Rad; auf größeren Monitoren bekommt der Header Luft. */
+  padding: clamp(0.9rem, 2vh, 2rem) 1rem clamp(0.6rem, 1.4vh, 1.4rem);
   text-align: center;
 }
 
@@ -175,7 +207,11 @@ header .subtitle {
   width: 100%;
   max-width: 1440px;
   border-top: 1px solid var(--rule);
-  padding-top: 1.2rem;
+  /* Vertikale Atmung: mit vh skalieren, damit kurze Viewports (MacBook 900px)
+     das Rad nicht ins Abschneiden zwingen. */
+  padding-top: clamp(0.8rem, 2vh, 2.2rem);
+  padding-bottom: clamp(0.8rem, 2vh, 2rem);
+  gap: clamp(0rem, 1.5vw, 1.2rem);
 }
 
 .left-col, .sidebar { position: relative; }
@@ -245,13 +281,19 @@ header .subtitle {
 }
 
 .wheel-svg {
-  width: min(600px, 90vw, calc(100vh - 300px));
-  height: min(600px, 90vw, calc(100vh - 300px));
+  /* Rad hat Priorität beim Schrumpfen: erst wenn weder 600px noch 92vw noch
+     100vh-240px ausreichen, wird es kleiner. Paddings/Gaps der Nachbarn
+     (clamp()) werden vorher reduziert. */
+  width: min(600px, 92vw, calc(100vh - 240px));
+  height: min(600px, 92vw, calc(100vh - 240px));
   filter:
     drop-shadow(0 4px 10px rgba(0, 0, 0, 0.06))
     drop-shadow(0 16px 40px rgba(0, 0, 0, 0.08));
   display: block;
 }
+
+/* SVG-Texte in Open Sans, konsistent mit der restlichen UI. */
+.wheel-svg text { font-family: var(--font-ui); }
 
 .slice {
   cursor: pointer;
@@ -289,7 +331,7 @@ header .subtitle {
   width: 300px;
   display: flex;
   flex-direction: column;
-  gap: 1.4rem;
+  gap: clamp(1.4rem, 2.5vw, 2.4rem);
   padding: 0.6rem 0.5rem 0 1.2rem;
 }
 
@@ -468,6 +510,7 @@ header .subtitle {
 }
 
 .ip-lesung {
+  visibility: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -485,6 +528,7 @@ header .subtitle {
 }
 
 .ip-predigt-date {
+  visibility: hidden;
   display: block;
   font-family: var(--font-ui);
   font-size: 0.78rem;
@@ -607,8 +651,8 @@ header .subtitle {
 footer {
   width: 100%;
   max-width: 1280px;
-  margin: 1.5rem auto 0;
-  padding: 1rem 2rem 0;
+  margin: clamp(0.6rem, 1.5vh, 1.5rem) auto 0;
+  padding: clamp(0.6rem, 1.2vh, 1rem) 2rem 0;
   text-align: center;
   border-top: 1px solid var(--rule);
 }
@@ -624,6 +668,414 @@ footer p {
 
 @media (prefers-reduced-motion: reduce) {
   .slice, #info-predigt, #tooltip, .ip-content { transition: none; animation: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Info-Seiten (Impressum / Datenschutz)
+   ═══════════════════════════════════════════════════════════════════════ */
+.info-page main { padding: 0 1.5rem; }
+
+.info-content {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: clamp(1rem, 2vh, 2rem) 0 clamp(2rem, 4vh, 3rem);
+  font-family: var(--font-ui);
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+.info-content section { margin-bottom: 2rem; }
+.info-content section:last-child { margin-bottom: 0; }
+
+.info-content h2 {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 0.7rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.info-content p {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  margin-bottom: 0.7rem;
+}
+
+.info-content p:last-child { margin-bottom: 0; }
+
+.info-content a {
+  color: var(--red);
+  text-decoration: none;
+  border-bottom: 1px solid var(--red-soft);
+  transition: border-color var(--transition);
+}
+
+.info-content a:hover,
+.info-content a:focus-visible {
+  border-bottom-color: var(--red);
+  outline: none;
+}
+
+.info-content ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 0.7rem;
+}
+
+.info-content ul li {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  padding: 0.15rem 0 0.15rem 1.2rem;
+  position: relative;
+}
+
+.info-content ul li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--red);
+  font-weight: 700;
+}
+
+.info-content .info-meta {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 1.5rem;
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 0.6rem;
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+.back-link:hover,
+.back-link:focus-visible {
+  color: var(--red);
+  outline: none;
+}
+
+/* Footer-Links auf allen Seiten */
+footer p a {
+  color: var(--ink-muted);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+footer p a:hover,
+footer p a:focus-visible {
+  color: var(--red);
+  outline: none;
+}
+
+footer .footer-links {
+  margin-top: 0.3rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   View Toggle (Tablet) + Swipe-Liste (Mobile/Tablet)
+   ═══════════════════════════════════════════════════════════════════════ */
+#view-toggle {
+  display: none;
+  margin-left: 0.8rem;
+  padding-left: 0.8rem;
+  border-left: 1px solid var(--rule-strong);
+  gap: 0.25rem;
+}
+
+.vt-btn {
+  height: 30px;
+  padding: 0 0.75rem;
+  border: 1px solid var(--rule-strong);
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.vt-btn:hover:not(.active) {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+.vt-btn.active {
+  background: var(--red);
+  color: var(--white);
+  border-color: var(--red);
+  cursor: default;
+}
+
+/* Rad/Liste Visibility gesteuert über body[data-view] */
+body[data-view="list"] .wheel-svg { display: none; }
+body[data-view="wheel"] .swipe-list { display: none; }
+
+.swipe-list {
+  --sl-card-h: clamp(72px, 12dvh, 96px);
+  --sl-gap: 8px;
+  --sl-visible: 4;
+  width: 100%;
+  max-width: 520px;
+  height: calc(var(--sl-card-h) * var(--sl-visible) + var(--sl-gap) * (var(--sl-visible) - 1) + 16px);
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 8px 0;
+  position: relative;
+}
+
+/* Desktop: Liste zeigt 6 Karten → ähnliche Höhe wie das Rad (~600px),
+   damit die Mittelspalte beim Umschalten nicht in der Höhe kollabiert. */
+@media (min-width: 1181px) {
+  /* View-unabhängiger Slot: identische Breite/Höhe für Rad und Liste.
+     Maße entsprechen denen der Wheel-SVG, damit sich die Spalten beim
+     View-Wechsel nicht um ~80px verschieben. */
+  #wheel-container {
+    width: min(600px, 92vw, calc(100vh - 240px));
+    height: min(600px, 92vw, calc(100vh - 240px));
+    padding: 0;
+  }
+
+  /* Rad und Liste koexistieren im Slot, absolut positioniert,
+     so daß Wechsel via Opacity statt Display funktioniert. */
+  .wheel-svg,
+  .swipe-list {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    transition: opacity 220ms var(--ease);
+  }
+
+  .swipe-list { --sl-visible: 6; }
+
+  /* Weicher Fade zwischen Rad und Liste (overridet die globalen
+     display: none Regeln oben). */
+  body[data-view="list"] .wheel-svg {
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+  }
+  body[data-view="wheel"] .swipe-list {
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.swipe-list::before,
+.swipe-list::after {
+  content: "";
+  position: sticky;
+  display: block;
+  left: 0;
+  right: 0;
+  height: 20px;
+  pointer-events: none;
+  z-index: 2;
+}
+.swipe-list::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--white), rgba(255,255,255,0));
+  margin-bottom: -20px;
+}
+.swipe-list::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--white), rgba(255,255,255,0));
+  margin-top: -20px;
+}
+
+.swipe-list-track {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sl-gap);
+  margin: 0;
+  padding: 0;
+}
+
+.sl-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  height: var(--sl-card-h);
+  padding: 0.6rem 0.9rem 0.6rem 1rem;
+  background: var(--off-white);
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  transition: background var(--transition), border-color var(--transition);
+  outline: none;
+}
+
+.sl-card:hover:not(.active) {
+  border-color: var(--rule-strong);
+  background: var(--white);
+}
+
+.sl-card:focus-visible {
+  border-color: var(--red);
+  box-shadow: 0 0 0 2px var(--red-soft);
+}
+
+.sl-card.active {
+  border-color: var(--red);
+  background: var(--white);
+}
+
+.sl-accent {
+  flex: 0 0 4px;
+  align-self: stretch;
+  border-radius: 0;
+}
+
+.sl-card.sl-christmas .sl-accent { background: #6B2D8B; }
+.sl-card.sl-easter    .sl-accent { background: #C8A400; }
+.sl-card.sl-ordinary  .sl-accent { background: #2D7A2D; }
+.sl-card.sl-festtag   .sl-accent { background: #D4AF37; }
+
+.sl-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.sl-date {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: 0.1em;
+}
+
+.sl-label {
+  font-family: var(--font-ui);
+  font-size: 0.98rem;
+  font-weight: 400;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sl-meta {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sl-sermon-dot {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+  align-self: center;
+}
+
+.sl-card.no-sermon .sl-sermon-dot {
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+}
+
+/* ─── List-Modus auf Tablet/Phone: feste Reihenfolge (Liste → Info → Legende → Bio)
+   Auf Desktop (>1180px) behält die Liste das 3-Spalten-Layout wie das Rad. */
+@media (max-width: 1180px) {
+  body[data-view="list"] #wheel-container {
+    padding: 1rem 0;
+    width: 100%;
+  }
+  body[data-view="list"] .main-layout {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
+    max-width: 640px;
+    /* Großzügige Abstände zwischen Liste, Info-Panel, Legende, Bio — skalieren runter ab ~480px Breite */
+    gap: clamp(1.4rem, 5vw, 3rem);
+    padding-top: clamp(1.5rem, 4vw, 3rem);
+    padding-bottom: clamp(1.5rem, 4vw, 3rem);
+  }
+  body[data-view="list"] .sidebar {
+    gap: clamp(1.4rem, 5vw, 3rem);
+  }
+  body[data-view="list"] #wheel-container {
+    order: 1;
+    flex: 0 0 auto;
+  }
+  body[data-view="list"] .sidebar {
+    order: 2;
+    width: 100%;
+    max-width: none;
+    flex: 0 0 auto;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 1rem;
+    padding: 0;
+  }
+  body[data-view="list"] .sidebar #info-panel {
+    order: 1;
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 0;
+  }
+  body[data-view="list"] .sidebar .legend-box {
+    order: 2;
+    flex: 0 0 auto;
+    width: 100%;
+  }
+  body[data-view="list"] .left-col {
+    order: 3;
+    width: 100%;
+    max-width: none;
+    flex: 0 0 auto;
+    border-top: 1px solid var(--rule);
+    padding: 1.2rem 0 0;
+  }
+  /* Column-Divider werden bereits vom allgemeinen 1180px-Block unten
+     (.left-col::after, .sidebar::before) ausgeblendet. */
+}
+
+/* Tablet & Desktop: Toggle sichtbar (Phone: nur Liste, kein Toggle) */
+@media (min-width: 681px) {
+  #view-toggle { display: inline-flex; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vt-btn, .sl-card { transition: none; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════

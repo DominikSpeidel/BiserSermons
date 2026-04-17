@@ -8,13 +8,7 @@
       name="description"
       content="Das katholische Kirchenjahr als interaktives Rad — Predigten von Eugen Biser und mehr."
     />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="style.css?v=100" />
+    <link rel="stylesheet" href="style.css?v=109" />
   </head>
   <body>
     <span class="accent-strip" aria-hidden="true"></span>
@@ -32,6 +26,10 @@
           <button class="year-btn" data-year="B">B</button>
           <button class="year-btn" data-year="C">C</button>
           <span id="year-label">2025/2026</span>
+        </div>
+        <div id="view-toggle" role="radiogroup" aria-label="Ansicht">
+          <button class="vt-btn active" data-view="wheel" role="radio" aria-checked="true">Rad</button>
+          <button class="vt-btn" data-view="list" role="radio" aria-checked="false">Liste</button>
         </div>
       </header>
 
@@ -151,10 +149,8 @@
               </div>
               <span class="ip-date"></span>
               <span class="ip-season"></span>
-              <span class="ip-lesung" style="visibility: hidden">&nbsp;</span>
-              <span class="ip-predigt-date" style="visibility: hidden"
-                >&nbsp;</span
-              >
+              <span class="ip-lesung">&nbsp;</span>
+              <span class="ip-predigt-date">&nbsp;</span>
               <button id="info-predigt" type="button" class="no-url">
                 Zur Predigt
               </button>
@@ -169,6 +165,10 @@
         Kirchenjahr 2025/2026 (Lesejahr A) — Alle Sonn- und ausgewählte Festtage
         vom 1.&nbsp;Advent bis Christkönig
       </p>
+      <p class="footer-links">
+        <a href="impressum.html">Impressum</a> ·
+        <a href="datenschutz.html">Datenschutz</a>
+      </p>
     </footer>
 
     <div id="tooltip" role="tooltip" aria-hidden="true">
@@ -176,7 +176,7 @@
       <span class="tt-date"></span>
     </div>
 
-    <script src="data.js?v=100"></script>
-    <script src="wheel.js?v=100"></script>
+    <script src="data.js?v=109"></script>
+    <script src="wheel.js?v=109"></script>
   </body>
 </html>
