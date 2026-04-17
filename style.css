@@ -1184,3 +1184,7 @@ body[data-view="wheel"] .swipe-list { display: none; }
     margin-top: 0.3rem;
   }
 }
+
+@media (max-width: 375px) {
+  header .subtitle { display: none; }
+}
