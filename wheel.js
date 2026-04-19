@@ -724,12 +724,13 @@
   }
 
   // ── Höhen-Sync: Sidebar-Unterkante = Bio-Box-Unterkante ──────────────────
-  // Nur auf Desktop (>1180px) sinnvoll — bei schmaleren Layouts wird die
-  // min-height zurückgesetzt, weil Sidebar und Bio dort gestapelt sind.
+  // Nur im echten 3-Spalten-Desktop-Layout sinnvoll. Tablet-Landscape bis
+  // 1366px nutzt das 2-Spalten-Layout mit Bio unterhalb — dort zurücksetzen.
   function syncPanelHeight() {
     const infoPanel = document.getElementById('info-panel');
     if (!infoPanel) return;
-    if (window.innerWidth <= 1180) {
+    const isLandscapeTablet = matchMedia('(min-width: 1021px) and (max-width: 1366px) and (orientation: landscape)').matches;
+    if (isLandscapeTablet || window.innerWidth <= 1180) {
       infoPanel.style.minHeight = '';
       return;
     }

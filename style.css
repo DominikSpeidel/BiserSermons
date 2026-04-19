@@ -1086,44 +1086,6 @@ body[data-view="list"] .legend-box { display: none; }
      (.left-col::after, .sidebar::before) ausgeblendet. */
 }
 
-/* Tablet-Landscape (nur wagerecht): Listenansicht zweispaltig — Liste links,
-   Sidebar (Info + Legende) rechts dauerhaft sichtbar, Bio wrapt darunter.
-   Senkrechte Tablets (auch iPad Pro 12.9" portrait = 1024 px breit) bleiben
-   unangetastet beim Single-Column-Layout. */
-@media (min-width: 1021px) and (max-width: 1180px) and (orientation: landscape) {
-  body[data-view="list"] .main-layout {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    max-width: 1020px;
-    gap: clamp(1rem, 2vw, 1.5rem);
-    padding-top: clamp(1rem, 2vw, 2rem);
-    padding-bottom: clamp(1rem, 2vw, 2rem);
-  }
-  body[data-view="list"] #wheel-container {
-    flex: 1 1 auto;
-    width: auto;
-    max-width: 600px;
-    padding: 0;
-  }
-  body[data-view="list"] .sidebar {
-    flex: 0 0 300px;
-    width: 300px;
-    max-width: 300px;
-    flex-direction: column;
-    gap: clamp(1.4rem, 2.5vw, 2.4rem);
-    padding: 0.6rem 0.5rem 0 1.2rem;
-  }
-  body[data-view="list"] .sidebar #info-panel { order: 1; }
-  body[data-view="list"] .sidebar .legend-box { order: 2; }
-  body[data-view="list"] .left-col {
-    order: 3;
-    flex: 0 0 100%;
-    width: 100%;
-    max-width: none;
-  }
-}
-
 /* Tablet & Desktop: Toggle sichtbar (Phone: nur Liste, kein Toggle) */
 @media (min-width: 681px) {
   #view-toggle { display: inline-flex; }
@@ -1159,6 +1121,61 @@ body[data-view="list"] .legend-box { display: none; }
     font-size: 1rem;
     letter-spacing: 0.01em;
     height: calc(1rem * 1.2 * 3);
+  }
+}
+
+/* Tablet-Landscape (nur wagerecht): Rad- und Listenansicht teilen dasselbe
+   zweispaltige Layout — Hauptspalte (Rad oder Liste) links, Sidebar (Info +
+   Legende) rechts dauerhaft sichtbar, Bio wrapt darunter. Keine Layout-
+   Verschiebung beim Toggle zwischen Rad und Liste. Range bis 1366px deckt
+   iPad Air/Pro, Samsung Tab S, Surface etc. — muss nach den allgemeinen
+   (max-width: 1180px)-Regeln stehen, damit es sie überschreibt. Senkrechte
+   Tablets bleiben beim Single-Column-Layout (siehe max-width: 1180 oben
+   für list, und max-width: 1020 unten für allgemein). */
+@media (min-width: 1021px) and (max-width: 1366px) and (orientation: landscape) {
+  body[data-view="wheel"] .main-layout,
+  body[data-view="list"] .main-layout {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    max-width: min(1200px, 100%);
+    gap: clamp(1rem, 2vw, 1.5rem);
+    padding-top: clamp(1rem, 2vw, 2rem);
+    padding-bottom: clamp(1rem, 2vw, 2rem);
+  }
+  /* Container-Slot ist Größen-bestimmend (Rad und Liste liegen darin absolut
+     positioniert, siehe @media (min-width: 1181px) oben). Wir vergrößern den
+     Slot bei Tablet-Landscape, damit das Rad von 600 auf bis zu 680 px wächst. */
+  body[data-view="wheel"] #wheel-container,
+  body[data-view="list"] #wheel-container {
+    flex: 0 0 auto;
+    order: 1;
+    width:  min(680px, 92vw, calc(100vh - 220px));
+    height: min(680px, 92vw, calc(100vh - 220px));
+    padding: 0;
+  }
+  body[data-view="wheel"] .sidebar,
+  body[data-view="list"] .sidebar {
+    flex: 0 0 300px;
+    order: 2;
+    width: 300px;
+    max-width: 300px;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: clamp(1.4rem, 2.5vw, 2.4rem);
+    padding: 0.6rem 0.5rem 0 1.2rem;
+  }
+  body[data-view="wheel"] .sidebar #info-panel,
+  body[data-view="list"] .sidebar #info-panel { order: 1; }
+  body[data-view="wheel"] .sidebar .legend-box,
+  body[data-view="list"] .sidebar .legend-box { order: 2; }
+  body[data-view="wheel"] .left-col,
+  body[data-view="list"] .left-col {
+    order: 3;
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: none;
+    margin: 0;
   }
 }
 
