@@ -436,6 +436,10 @@ header .subtitle {
   margin-top: 0.5rem;
 }
 
+/* Hint wechselt je nach aktivem View */
+body[data-view="wheel"] .ip-hint-list,
+body[data-view="list"]  .ip-hint-wheel { display: none; }
+
 #info-panel.visible .ip-empty { display: none; }
 
 .ip-content {
