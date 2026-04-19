@@ -1141,6 +1141,7 @@ body[data-view="list"] .legend-box { display: none; }
     flex: 0 0 auto;
     width: 100%;
     max-width: 600px;
+    margin-right: auto;
     padding: 1.2rem 0 0;
     border-top: 1px solid var(--rule);
   }
