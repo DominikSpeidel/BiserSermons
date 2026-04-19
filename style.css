@@ -652,6 +652,12 @@ header .subtitle {
   letter-spacing: 0.04em;
 }
 
+/* Touch-Geräte (Tablet/Phone): Tooltip unterdrücken — ohne verlässliches
+   mouseleave bleibt er sonst nach einem Tap hängen und verdeckt Inhalte. */
+@media (hover: none) {
+  #tooltip { display: none !important; }
+}
+
 
 /* ═══════════════════════════════════════════════════════════════════════
    Footer
