@@ -1154,6 +1154,10 @@ body[data-view="list"] .legend-box { display: none; }
     height: min(680px, 92vw, calc(100vh - 220px));
     padding: 0;
   }
+  /* Liste oben bündig mit dem Info-Panel — #wheel-container hat sonst
+     align-items: center für das Rad, was die (kürzere) Liste vertikal
+     in den Slot zentriert und ~80 px nach unten schiebt. */
+  body[data-view="list"] #wheel-container { align-items: flex-start; }
   body[data-view="wheel"] .sidebar,
   body[data-view="list"] .sidebar {
     flex: 0 0 300px;
