@@ -1164,18 +1164,19 @@ body[data-view="list"] .legend-box { display: none; }
     align-items: center;
     padding-top: 1rem;
   }
+  /* Senkrecht: Bio zentriert (overridet margin-right: auto aus der
+     Landscape-Wrap-Regel bei max-width:1180). */
+  .left-col { margin: 0 auto; }
+  /* Senkrecht: Liturgische Farben raus — Farben werden bereits im Rad
+     und an den Listenkarten angezeigt, die Zweit-Legende wirkt hier unruhig. */
+  .legend-box { display: none; }
   .sidebar {
     width: 100%;
     max-width: 600px;
-    flex-direction: row;
-    flex-wrap: wrap;
     gap: 1rem;
     padding: 0;
   }
-  .legend-box, #info-panel {
-    flex: 1 1 calc(50% - 0.5rem);
-    min-width: 0;
-  }
+  #info-panel { width: 100%; }
   #wheel-container { padding: 0; width: 100%; }
 }
 
