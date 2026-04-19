@@ -65,6 +65,8 @@ html, body {
   overflow-x: hidden;
 }
 
+body { scrollbar-gutter: stable; }
+
 body {
   display: flex;
   flex-direction: column;
@@ -334,6 +336,12 @@ header .subtitle {
   gap: clamp(1.4rem, 2.5vw, 2.4rem);
   padding: 0.6rem 0.5rem 0 1.2rem;
 }
+
+/* Info-Panel zuoberst, Legende darunter — verhindert UI-Verschiebung
+   beim Toggle Rad↔Liste, wenn die Legende im List-View ausgeblendet wird.
+   Das Info-Panel bleibt dadurch stets an derselben Y-Position. */
+.sidebar #info-panel { order: 1; }
+.sidebar .legend-box { order: 2; }
 
 .legend-box { background: transparent; }
 
@@ -827,6 +835,9 @@ footer .footer-links {
 /* Rad/Liste Visibility gesteuert über body[data-view] */
 body[data-view="list"] .wheel-svg { display: none; }
 body[data-view="wheel"] .swipe-list { display: none; }
+/* Farblegende nur in der Rad-Ansicht sinnvoll — Listenansicht zeigt Farben
+   bereits per Farbpunkt/Akzent an den Karten, daher hier ausblenden. */
+body[data-view="list"] .legend-box { display: none; }
 
 .swipe-list {
   --sl-card-h: clamp(72px, 12dvh, 96px);
@@ -1069,6 +1080,44 @@ body[data-view="wheel"] .swipe-list { display: none; }
      (.left-col::after, .sidebar::before) ausgeblendet. */
 }
 
+/* Tablet-Landscape (nur wagerecht): Listenansicht zweispaltig — Liste links,
+   Sidebar (Info + Legende) rechts dauerhaft sichtbar, Bio wrapt darunter.
+   Senkrechte Tablets (auch iPad Pro 12.9" portrait = 1024 px breit) bleiben
+   unangetastet beim Single-Column-Layout. */
+@media (min-width: 1021px) and (max-width: 1180px) and (orientation: landscape) {
+  body[data-view="list"] .main-layout {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    max-width: 1020px;
+    gap: clamp(1rem, 2vw, 1.5rem);
+    padding-top: clamp(1rem, 2vw, 2rem);
+    padding-bottom: clamp(1rem, 2vw, 2rem);
+  }
+  body[data-view="list"] #wheel-container {
+    flex: 1 1 auto;
+    width: auto;
+    max-width: 600px;
+    padding: 0;
+  }
+  body[data-view="list"] .sidebar {
+    flex: 0 0 300px;
+    width: 300px;
+    max-width: 300px;
+    flex-direction: column;
+    gap: clamp(1.4rem, 2.5vw, 2.4rem);
+    padding: 0.6rem 0.5rem 0 1.2rem;
+  }
+  body[data-view="list"] .sidebar #info-panel { order: 1; }
+  body[data-view="list"] .sidebar .legend-box { order: 2; }
+  body[data-view="list"] .left-col {
+    order: 3;
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: none;
+  }
+}
+
 /* Tablet & Desktop: Toggle sichtbar (Phone: nur Liste, kein Toggle) */
 @media (min-width: 681px) {
   #view-toggle { display: inline-flex; }
@@ -1096,6 +1145,14 @@ body[data-view="wheel"] .swipe-list { display: none; }
     border-top: 1px solid var(--rule);
   }
   .left-col::after, .sidebar::before { display: none; }
+  /* Info-Panel-Label in der 300px-Sidebar: kleinere Schrift und engeres
+     Tracking, damit längere Namen wie "FEST DER HEILIGEN FAMILIE" sauber
+     in max. 3 Zeilen passen, statt visuell abgeschnitten zu werden. */
+  .ip-label {
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+    height: calc(1rem * 1.2 * 3);
+  }
 }
 
 @media (max-width: 1020px) {
